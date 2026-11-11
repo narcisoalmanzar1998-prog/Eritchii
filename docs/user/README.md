@@ -24,6 +24,7 @@ A copy of this handbook is [available online](https://git.eden-emu.dev/eden-emu/
 - **[Troubleshooting](./Troubleshoot.md)**
 - **[Using Amiibo](./UsingAmiibo.md)**
 - **[Using Cheats](./UsingCheats.md)**
+- **[Ocarina of Time (Switch 2) In-Game Cheats](./OcarinaOfTimeCheats.md)**
 - **[Importing Saves](./ImportingSaves.md)**
 - **[Installing Atmosphere Mods](./InstallingAtmosphereMods.md)**
 - **[Installing Updates & DLCs](./InstallingUpdatesDLC.md)**
