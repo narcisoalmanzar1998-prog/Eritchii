@@ -79,6 +79,10 @@ jobs:
           New-Item -ItemType Directory -Force -Path $optional | Out-Null
           Copy-Item tools/oot_cheats/install.py "$optional/install.py"
           Copy-Item docs/user/OcarinaOfTimeCheats.md "$optional/README.md"
+          Copy-Item tools/oot_cheats/instalar_menu_es.py "$optional/instalar_menu_es.py"
+          Copy-Item tools/oot_cheats/es.json "$optional/es.json"
+          Copy-Item docs/user/OcarinaOfTimeMenuES.md "$bin/LEEME_MENU_ES.md"
+          Copy-Item tools/oot_cheats/INSTALAR_MENU_ES.bat "$bin/INSTALAR_MENU_ES.bat"
 
       - name: Upload complete Windows package
         uses: actions/upload-artifact@v7
