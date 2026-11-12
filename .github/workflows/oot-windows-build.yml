@@ -1,0 +1,93 @@
+name: Eritchii Windows + OoT cheat installer
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/oot-cheat-menu-installer
+    paths:
+      - .github/workflows/oot-windows-build.yml
+      - tools/oot_cheats/**
+      - docs/user/OcarinaOfTimeCheats.md
+      - src/**
+      - CMakeLists.txt
+      - cpmfile.json
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    name: Build portable Windows package
+    runs-on: windows-2022
+    timeout-minutes: 120
+    steps:
+      - name: Check out Eritchii
+        uses: actions/checkout@v5
+
+      - name: Set up MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          host: windows
+          target: desktop
+          arch: win64_msvc2022_64
+          modules: qtcharts
+          cache: true
+
+      - name: Install Vulkan SDK
+        shell: pwsh
+        run: ./tools/windows/install-vulkan-sdk.ps1
+
+      - name: Check Vulkan tools
+        shell: pwsh
+        run: glslangValidator --version
+
+      - name: Configure Release
+        shell: bash
+        run: >-
+          cmake -S . -B build/release -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DBUILD_TESTING=OFF
+          -DYUZU_TESTS=OFF
+          -DYUZU_CMD=OFF
+          -DYUZU_ROOM=OFF
+          -DYUZU_ROOM_STANDALONE=OFF
+          -DYUZU_USE_BUNDLED_QT=OFF
+          -DYUZU_USE_BUNDLED_SDL3=ON
+          -DENABLE_UPDATE_CHECKER=ON
+          -DUSE_DISCORD_PRESENCE=OFF
+          -DLICHII_BUILD_TAG=oot-cheats-${{ github.run_number }}
+          -DLICHII_BUILD_PLATFORM=windows-x86_64
+
+      - name: Compile lichii.exe
+        shell: bash
+        run: cmake --build build/release --target yuzu --parallel 4
+
+      - name: Package executable, DLLs and optional cheats installer
+        shell: pwsh
+        run: |
+          $bin = 'build/release/bin'
+          if (-not (Test-Path "$bin/lichii.exe")) {
+            throw 'The Windows executable was not produced'
+          }
+          windeployqt --release --no-translations "$bin/lichii.exe"
+          $optional = "$bin/optional-OoT-cheats"
+          New-Item -ItemType Directory -Force -Path $optional | Out-Null
+          Copy-Item tools/oot_cheats/install.py "$optional/install.py"
+          Copy-Item docs/user/OcarinaOfTimeCheats.md "$optional/README.md"
+          Copy-Item tools/oot_cheats/instalar_menu_es.py "$optional/instalar_menu_es.py"
+          Copy-Item tools/oot_cheats/es.json "$optional/es.json"
+          Copy-Item docs/user/OcarinaOfTimeMenuES.md "$bin/LEEME_MENU_ES.md"
+          Copy-Item tools/oot_cheats/INSTALAR_MENU_ES.bat "$bin/INSTALAR_MENU_ES.bat"
+
+      - name: Upload complete Windows package
+        uses: actions/upload-artifact@v7
+        with:
+          name: Eritchii-Windows-OoT-cheats-${{ github.run_number }}
+          path: build/release/bin/
+          if-no-files-found: error
+          retention-days: 30
